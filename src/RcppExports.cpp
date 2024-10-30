@@ -13,8 +13,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // pepmarginallikelihoodc
-List pepmarginallikelihoodc(arma::mat x, NumericVector y, arma::mat xnew, bool pred, bool intrinsic, double d0, double d1);
-RcppExport SEXP _PEPBVS_pepmarginallikelihoodc(SEXP xSEXP, SEXP ySEXP, SEXP xnewSEXP, SEXP predSEXP, SEXP intrinsicSEXP, SEXP d0SEXP, SEXP d1SEXP) {
+List pepmarginallikelihoodc(arma::mat x, NumericVector y, arma::mat xnew, bool pred, bool intrinsic, double d0, double d1, int k0, double R0);
+RcppExport SEXP _PEPBVS_pepmarginallikelihoodc(SEXP xSEXP, SEXP ySEXP, SEXP xnewSEXP, SEXP predSEXP, SEXP intrinsicSEXP, SEXP d0SEXP, SEXP d1SEXP, SEXP k0SEXP, SEXP R0SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -25,7 +25,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type intrinsic(intrinsicSEXP);
     Rcpp::traits::input_parameter< double >::type d0(d0SEXP);
     Rcpp::traits::input_parameter< double >::type d1(d1SEXP);
-    rcpp_result_gen = Rcpp::wrap(pepmarginallikelihoodc(x, y, xnew, pred, intrinsic, d0, d1));
+    Rcpp::traits::input_parameter< int >::type k0(k0SEXP);
+    Rcpp::traits::input_parameter< double >::type R0(R0SEXP);
+    rcpp_result_gen = Rcpp::wrap(pepmarginallikelihoodc(x, y, xnew, pred, intrinsic, d0, d1, k0, R0));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -80,12 +82,30 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// test_pepc
+List test_pepc(arma::mat x, arma::mat gamma, NumericVector y, bool intrinsic, bool reference_prior, int k0, double R0);
+RcppExport SEXP _PEPBVS_test_pepc(SEXP xSEXP, SEXP gammaSEXP, SEXP ySEXP, SEXP intrinsicSEXP, SEXP reference_priorSEXP, SEXP k0SEXP, SEXP R0SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< bool >::type intrinsic(intrinsicSEXP);
+    Rcpp::traits::input_parameter< bool >::type reference_prior(reference_priorSEXP);
+    Rcpp::traits::input_parameter< int >::type k0(k0SEXP);
+    Rcpp::traits::input_parameter< double >::type R0(R0SEXP);
+    rcpp_result_gen = Rcpp::wrap(test_pepc(x, gamma, y, intrinsic, reference_prior, k0, R0));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_PEPBVS_pepmarginallikelihoodc", (DL_FUNC) &_PEPBVS_pepmarginallikelihoodc, 7},
+    {"_PEPBVS_pepmarginallikelihoodc", (DL_FUNC) &_PEPBVS_pepmarginallikelihoodc, 9},
     {"_PEPBVS_full_enumeration_pepc", (DL_FUNC) &_PEPBVS_full_enumeration_pepc, 5},
     {"_PEPBVS_mc3_pepc", (DL_FUNC) &_PEPBVS_mc3_pepc, 10},
     {"_PEPBVS_predict_pepc", (DL_FUNC) &_PEPBVS_predict_pepc, 6},
+    {"_PEPBVS_test_pepc", (DL_FUNC) &_PEPBVS_test_pepc, 7},
     {NULL, NULL, 0}
 };
 

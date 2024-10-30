@@ -87,7 +87,7 @@ checkmissingness <- function(x,y){
   stop("Please respecify and call the function again.")
  }
  if (sum(is.na(x))>0){
-  message("Error: the input matrix should not contain missing values.\n")
+  message("Error: the input data matrix should not contain missing values.\n")
   stop("Please respecify and call the function again.")
  }
 }                     # end function checkmissingness
@@ -96,7 +96,7 @@ checkmatrixrank <- function(x){
 # Takes an input matrix x and checks if it is of full rank.
 #
  if (Matrix::rankMatrix(x)[1]!=ncol(x)){
-   message("Error: the input matrix is not full rank.\n")
+   message("Error: the input data matrix is not full rank.\n")
    stop("Please respecify and call the function again.")
  }
 }                     # end function checkmatrixrank
@@ -130,11 +130,14 @@ checkinputvartypepredict <- function(x,xnew,estimator,n.models,cumul.prob){
 #
                       # check if the new data is a matrix of numeric (or NULL)
  if(!(((is.matrix(xnew))&&(is.numeric(xnew)))||is.null(xnew))){
-   message("Error: xnew should be a matrix or a data frame of numeric.\n") 
+  # message("Error: xnew should be a matrix or a data frame of numeric.\n")
+  # now that formula is used xnew is transformed to a matrix thus, normally
+  # it will always be a matrix 
+   message("Error: xnew should be a data frame of numeric.\n")
    stop("Please respecify and call the function again.")
  }
  if (sum(is.na(xnew))>0){ # check that xnew does not contain NAs
-  message("Error: the matrix xnew should not contain missing values.\n")
+  message("Error: xnew should not contain missing values.\n")
   stop("Please respecify and call the function again.")
  }
                       # check that the new and original data matrix are

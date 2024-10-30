@@ -26,13 +26,13 @@ double A2simple(double u, void * params){
 
 // [[Rcpp::export]]
 List pepmarginallikelihoodc(arma::mat x, NumericVector y, arma::mat xnew, bool pred =false, 
-                            bool intrinsic = false, double d0=0, double d1=0){
+                            bool intrinsic = false, double d0=0, double d1=0, int k0 = 1,double R0 = 0){
  double res2;
  double R1;
  int p = x.n_cols;    // number of explanatory variables
  double n = y.size(); // sample size
  p = p+1;             // increase p by 1 (dimension of model under consideration)
- int k0 = 1, k1 = p, nstar = n; // parameters k0 (dimension of null), k1 and n*
+ int k1 = p, nstar = n; // parameters k0 (dimension of null), k1 and n*
  double delta = n;    // delta = n for PEP
  if (intrinsic){      // if prior is intrinsic
    nstar = k1+1;      // change n*
@@ -45,7 +45,7 @@ List pepmarginallikelihoodc(arma::mat x, NumericVector y, arma::mat xnew, bool p
  double an1 = (n+d0-k1)/2;        // an1
  int ke = (k1-k0);   // models' dimension difference
  double res;
- double R0 = 0;      // coefficient of determination for null model
+ // double R0 = 0;      // coefficient of determination for null model
  double R;
  arma::colvec y2 = y; // response vector - as 1-column matrix
  arma::mat z(n,p);    // matrix z of size nxp - will be the design matrix
@@ -318,3 +318,45 @@ List predict_pepc(arma::mat x, arma::mat gamma, NumericVector y,arma::mat xnew,
  gsl_set_error_handler(NULL);           // set the gsl error handler on again
  return predictionsspep;
 }                                       // end function predict_pepc
+
+// [[Rcpp::export]]
+List test_pepc(arma::mat x, arma::mat gamma, NumericVector y, 
+                           bool intrinsic = false, bool reference_prior = true,
+                           int k0 = 1,double R0 = 0){
+ int nmodels = gamma.n_rows;   // number of models
+ // vectors for marginal likelihood and R-squared initialization
+ NumericVector MargLikel(nmodels); 
+ double d0 = 0, d1 = 0;
+ if (!reference_prior)
+   d0 = k0;
+ // set the gsl error handler off because otherwise the R console
+ // will automatically close (by default) in the presence of an error
+ gsl_set_error_handler_off();
+
+ for (int i = 0; i < nmodels; ++i){ 
+  arma::rowvec armag = gamma.row(i); // get the model representation
+  int nvar = sum(armag); // number of input variables included
+  if (nvar==1) {         // if only one
+    arma::colvec xg = x.cols(find(armag==1)); //corresponding 1-column matrix
+    if (!reference_prior) 
+       d1 = 2;
+                                   // compute marginal likelihood and Rsq
+    List modelresults = pepmarginallikelihoodc(xg,y,xg,false,intrinsic,d0,d1,k0,R0);
+    MargLikel[i] = modelresults["marglikel"]; // store marginal likelihood
+  }
+  else {arma::mat xg = x.cols(find(armag==1)); //corresponding input matrix
+    if (!reference_prior)
+       d1 = xg.n_cols+1;
+                                   // compute marginal likelihood and Rsq    
+    List modelresults = pepmarginallikelihoodc(xg,y,xg,false,intrinsic,d0,d1,k0,R0);
+    MargLikel[i] = modelresults["marglikel"]; // store marginal likelihood
+  }                                     // end if
+ }                                      // end for
+ gsl_set_error_handler(NULL);           // set the gsl error handler on again
+ List resultspep;                       // list with the results
+ resultspep["marglikel"] = MargLikel;   // 1st element: log marginal likelihoods
+ return resultspep;
+}                                       // end function full_enumeration_pepc
+
+
+

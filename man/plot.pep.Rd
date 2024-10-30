@@ -7,13 +7,12 @@
 \method{plot}{pep}(x, ...)
 }
 \arguments{
-\item{x}{An object of class pep (e.g. output of \code{full_enumeration_pep} 
-or \code{mc3_pep}).}
+\item{x}{An object of class pep (e.g., output of \code{pep.lm}).}
 
 \item{...}{Additional graphical parameters to be passed to plotting functions.}
 }
 \value{
-No return value, used for generating a figure.
+No return value, used for figure generation.
 }
 \description{
 Generates four plots related to an object of class pep. In particular,
@@ -26,18 +25,16 @@ the fourth plot shows the posterior inclusion probabilities
 of the explanatory variables (with those exceeding 0.5 marked in red).
 }
 \details{
-Let k be the number of models with cumulative posterior probability up 
+Let \eqn{k} be the number of models with cumulative posterior probability up 
 to 0.99. Then, the second plot depicts the cumulative posterior probability 
-of the top (k+1) models.
+of the top \eqn{(k+1)} models.
 
 In the special case of no explanatory variables, the fourth plot with the
 posterior inclusion probabilities is not generated.
 }
 \examples{
 data(UScrime_data)
-y <- UScrime_data[,"y"]
-X <- UScrime_data[,-15]
-res <- full_enumeration_pep(X,y)
+res <- pep.lm(y~.,data=UScrime_data)
 plot(res)
 
 }

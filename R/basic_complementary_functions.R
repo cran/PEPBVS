@@ -9,25 +9,22 @@
 #' the fourth plot shows the posterior inclusion probabilities
 #' of the explanatory variables (with those exceeding 0.5 marked in red).
 #'
-#' @param x An object of class pep (e.g. output of \code{full_enumeration_pep} 
-#' or \code{mc3_pep}).
+#' @param x An object of class pep (e.g., output of \code{pep.lm}).
 #' @param ... Additional graphical parameters to be passed to plotting functions.
 #'
 #' @return No return value, used for figure generation.
 #'
 #' @details
-#' Let k be the number of models with cumulative posterior probability up 
+#' Let \eqn{k} be the number of models with cumulative posterior probability up 
 #' to 0.99. Then, the second plot depicts the cumulative posterior probability 
-#' of the top (k+1) models.
+#' of the top \eqn{(k+1)} models.
 #'
 #' In the special case of no explanatory variables, the fourth plot with the
 #' posterior inclusion probabilities is not generated.
 #'
 #' @examples
 #' data(UScrime_data)
-#' y <- UScrime_data[,"y"]
-#' X <- UScrime_data[,-15]
-#' res <- full_enumeration_pep(X,y)
+#' res <- pep.lm(y~.,data=UScrime_data)
 #' plot(res)
 #'
 #' @seealso \code{\link{image.pep}}
@@ -96,18 +93,18 @@ plot.pep <- function(x,...){
 #' For each of the top models (shown in columns), the following information is
 #' printed: the model representation using variable inclusion indicators, 
 #' its marginal likelihood (in log scale), the R2, the model dimension, the Bayes 
-#' factor, posterior odds and posterior probability. An additional 
+#' factor, posterior odds (comparison made with the highest posterior 
+#' probability model) and posterior probability. An additional 
 #' column with the posterior inclusion probabilities of the explanatory variables is 
 #' also printed. 
 #'
-#' @param x An object of class pep (e.g. output of \code{full_enumeration_pep} 
-#' or \code{mc3_pep}).
+#' @param x An object of class pep (e.g., output of \code{pep.lm}).
 #' @param n.models Positive integer, the number of top models for which information 
 #' is provided. Default value=5.
-#' @param actual.PO Boolean, relevant for the MC3 algorithm. If \code{TRUE}
+#' @param actual.PO Logical, relevant for the MC3 algorithm. If \code{TRUE}
 #' then apart from the estimated posterior odds, the actual posterior
-#' odds of the top models (i.e. ratios based on the marginal likelihood 
-#' times prior probability) are also printed - which could be used as a 
+#' odds of the MAP model versus the top models (i.e., ratios based on the marginal likelihood 
+#' times prior probability) are also printed --- which could be used as a 
 #' convergence indicator of the algorithm. Default value=\code{FALSE}.
 #' @param digits Positive integer, the number of digits for printing numbers. 
 #' Default value=\code{max(3L, getOption("digits") - 3L)}.
@@ -123,9 +120,7 @@ plot.pep <- function(x,...){
 #'
 #' @examples
 #' data(UScrime_data)
-#' y <- UScrime_data[,"y"]
-#' X <- UScrime_data[,-15]
-#' res <- full_enumeration_pep(X,y)
+#' res <- pep.lm(y~.,data=UScrime_data)
 #' print(res)
 #'
 #' @method print pep
@@ -193,7 +188,7 @@ print.pep <- function(x, n.models=5, actual.PO=FALSE,
     quote = FALSE,...)                # do not add surrounding quotes
 }                                     # end function print.pep
 
-#' Prediction under PEP approach
+#' (Point) Prediction under PEP approach
 #'
 #' Computes predicted or fitted values under the PEP approach. Predictions
 #' can be based on Bayesian model averaging, maximum a posteriori model or
@@ -201,20 +196,21 @@ print.pep <- function(x, n.models=5, actual.PO=FALSE,
 #' top models (either based on explicit number or on their cumulative probability) 
 #' can be used for prediction.
 #'
-#' @param object An object of class pep (e.g. output of \code{full_enumeration_pep} 
-#' or \code{mc3_pep}).
-#' @param xnew A matrix of numeric (with p columns), the new data to be used for prediction.
-#' This matrix contains the values of the explanatory variables 
-#' without an intercept column of 1's, i.e. the number of its columns
-#' coincides with the number of columns of \code{object$x}.
-#' If omitted, fitted values are computed.
+#' @param object An object of class pep (e.g., output of \code{pep.lm}).
+#' @param xnew An optional data frame of numeric, the new data 
+#' on the explanatory variables to be used 
+#' for prediction. The data frame needs to contain information about all 
+#' explanatory variables available in the full model; if not an error message
+#' is output. If omitted, fitted values are 
+#' computed.
 #' @param estimator A character, the type of prediction. One of 
-#' "BMA" (Bayesian model averaging, default), 
-#' "MAP" (maximum a posteriori model) or "MPM" (median probability model).
+#' ``BMA'' (Bayesian model averaging, default), 
+#' ``MAP'' (maximum a posteriori model) or ``MPM'' (median probability model).
+#' Default value=\code{"BMA"}.
 #' @param n.models Positive integer, the number of (top) models that
 #' prediction is based on or \code{NULL}. Relevant for \code{estimator="BMA"}.
 #' Default value=\code{NULL}.
-#' @param cumul.prob Numeric between 0 and 1, cumulative probability of
+#' @param cumul.prob Numeric between zero and one, cumulative probability of
 #' top models to be used for prediction. Relevant for \code{estimator="BMA"}. 
 #' Default value=0.99.
 #' @param ... Additional parameters to be passed, currently none.
@@ -223,37 +219,39 @@ print.pep <- function(x, n.models=5, actual.PO=FALSE,
 #' values for the different observations.
 #'
 #' @details
-#' When \code{xnew} is missing or \code{xnew}=\code{object$x} then fitted 
+#' When \code{xnew} is missing or \code{xnew} is equal to the initial
+#' data frame used for fitting, then fitted 
 #' values are computed (and returned).
 #'
 #' For prediction, Equation 9 of Fouskakis and Ntzoufras (2020) is used.
 #'
-#' The case of missing data (i.e. presence of NA’s) in the new data matrix is
-#' not currently supported.
+#' The case of missing data (i.e., presence of NA’s) 
+#' and non--quantitative data in the new data frame
+#' \code{xnew} is not currently supported.
 #'
-#' Let k be the number of models with cumulative posterior probability up 
+#' Let \eqn{k} be the number of models with cumulative posterior probability up 
 #' to the given value of \code{cumul.prob}. Then, for Bayesian model averaging 
-#' the prediction is based on the top (k+1) models if they exist, otherwise
-#' on the top k models.
+#' the prediction is based on the top \eqn{(k+1)} models if they exist, otherwise
+#' on the top \eqn{k} models.
 #'
-#' When both \code{n.models} and \code{cumul.prob} are provided - once 
+#' When both \code{n.models} and \code{cumul.prob} are provided --- once 
 #' specifying the number of models for the given cumulative probability as 
-#' described above - the minimum between the two numbers is used for prediction.
+#' described above --- the minimum between the two numbers is used for prediction.
 #'
-#' @references Fouskakis, D. and Ntzoufras, I. (2022) Power-Expected-Posterior 
-#' Priors as Mixtures of g-Priors in Normal Linear Models. 
+#' @references Fouskakis, D. and Ntzoufras, I. (2022) Power--Expected--Posterior 
+#' Priors as Mixtures of g--Priors in Normal Linear Models. 
 #' Bayesian Analysis, 17(4): 1073-1099. \doi{10.1214/21-BA1288}
 #'
 #' Fouskakis, D. and Ntzoufras, I. (2020) Bayesian Model Averaging Using 
-#' Power-Expected-Posterior Priors. 
+#' Power--Expected--Posterior Priors. 
 #' Econometrics, 8(2): 17. \doi{10.3390/econometrics8020017}
 #'
 #' @examples
 #' data(UScrime_data)
-#' y <- UScrime_data[,"y"]
 #' X <- UScrime_data[,-15]
 #' set.seed(123)
-#' res <- mc3_pep(X[1:45,],y[1:45],intrinsic=TRUE,itermc3=4000)
+#' res <- pep.lm(y~.,data=UScrime_data[1:45,],intrinsic=TRUE,
+#'                algorithmic.choice="MC3",itermc3=4000)
 #' resf <- predict(res)
 #' resf2 <- predict(res,estimator="MPM")
 #' resp <- predict(res,xnew=X[46:47,])
@@ -271,21 +269,25 @@ predict.pep <- function(object,xnew,estimator="BMA",
  if(!inherits(object,"pep"))          # check if x is an object of type pep
    stop("object should be an object of type pep.")
  x <- object$x                        # input matrix
- if(missing(xnew))                    # if new data matrix is missing
-  xnew <- x                           # use the original input matrix
- if(is.data.frame(xnew))              # if new data is a data frame
-  xnew <- as.matrix(xnew)             # turn it to a matrix
- p <- ncol(x)                         # number of explanatory variables
- if(is.vector(xnew))                  # if new data is a vector
-  if(p==1)                            # and there is only one input variable
-   xnew <- matrix(xnew,ncol=1) else   # then turn it to a 1-column matrix
-   xnew <- matrix(xnew,nrow=1)        # otherwise turn it to a 1-row matrix
-                                      # check additional arguments
- checkinputvartypepredict(x,xnew,estimator,n.models,cumul.prob) 
  y <- object$y                        # response vector
- intrinsic <- object$intrinsic        # whether intrinsic or PEP prior
- reference.prior <- object$reference.prior   # hyperparameters d0 & d1
- modelsmr <- object$models            # model info
+ if (!is.null(x)){
+  if(missing(xnew))                   # if new data matrix is missing
+   xnew <- x else{                    # use the original input matrix
+   if(!is.data.frame(xnew)){          # if new data is not a data frame
+    message("Error: xnew should be a data frame.\n") 
+    stop("Please respecify and call the function again.")
+   }  
+   tt <- terms(object$fullmodel)
+   Terms <- delete.response(tt)
+   xnew <- as.matrix(model.frame(Terms, xnew,na.action=NULL))
+  }
+                                      # check additional arguments
+  checkinputvartypepredict(x,xnew,estimator,n.models,cumul.prob) 
+  p <- ncol(x)                        # number of explanatory variables
+  intrinsic <- object$intrinsic       # whether intrinsic or PEP prior
+  reference.prior <- object$reference.prior   # hyperparameters d0 & d1
+  modelsmr <- object$models           # model info
+ }
  if (is.null(x)){                     # if no input variable
                                       # the predicted value will be the mean response
   res2M <- matrix(rep(mean(y),length(y)),ncol=1)
@@ -294,6 +296,9 @@ predict.pep <- function(object,xnew,estimator="BMA",
   gamma <- modelsmr[,1:p]             # models as inclusion indicator variables 
   if (p==1)                           # if only one input variable                     
    gamma <- matrix(gamma,ncol=1)      # turn the vector to a 1-column matrix
+  if (dim(modelsmr)[1]==1)            # if only one model returned (e.g. from MC3)
+                                      # turn the vector to a 1-row matrix
+  gamma <- matrix(gamma,nrow=1)
                                       # center input matrix
   x <- scale(x, center=TRUE, scale = FALSE) 
                                       # use the same centering for the new data matrix
@@ -338,10 +343,10 @@ predict.pep <- function(object,xnew,estimator="BMA",
   }else if (estimator=="MPM"){        # prediction using median probability model
    inc.probs <- object$inc.probs      # inclusion probs
    indv <- which(inc.probs>0.5)       # input variables with inclusion prob>0.5
-   if (length(indv)==0){              # if there is none
-                                      # print a message
-     stop("No input variable with incl prob > 0.5")
-   }else{
+   # if (length(indv)==0){              # if there is none
+   #                                   # print a message
+   #  stop("No input variable with incl prob > 0.5")
+   # }else{
     gammav <- rep(0,p)                # vector with inclusion indicators initialization
     gammav[indv] <- 1                 # set 1 to the included variables
     gamma <- matrix(gammav,nrow=1)    # turn the vector to a 1-row matrix 
@@ -349,22 +354,367 @@ predict.pep <- function(object,xnew,estimator="BMA",
     res2 <- predict_pepc(x, gamma, y, xnew, intrinsic, reference.prior)
     res2M <- do.call(cbind,res2)      # turn the list to a matrix
     res2v <- as.vector(res2M)         # and then to a vector
-   }                  
+   # }                  
   }                                   # end else (MPM)     
  }                                    # end else (for if (is.null(x)))
  return(res2v)
 }                                     # end function predict.pep
 
+#' Model averaged estimates
+#'
+#' Simulates values from the (joint) posterior distribution of the 
+#' beta coefficients under Bayesian model averaging.
+#' 
+#' @param object An object of class pep (e.g., output of \code{pep.lm}).
+#' @param ssize Positive integer, the number of values to be simulated from
+#' the (joint) posterior distribution of the beta coefficients.
+#' Default value=10000.
+#' @param estimator A character, the type of estimation. One of 
+#' ``BMA'' (Bayesian model averaging, default), 
+#' ``MAP'' (maximum a posteriori model) or ``MPM'' (median probability model).
+#' Default value=\code{"BMA"}.
+#' @param n.models Positive integer, the number of (top) models where
+#' the average is based on or \code{NULL}. Relevant for \code{estimator="BMA"}.
+#' Default value=\code{NULL}.
+#' @param cumul.prob Numeric between zero and one, cumulative probability of
+#' top models to be used for computing the average. Relevant for \code{estimator="BMA"}. 
+#' Default value=0.99.
+#'
+#' @return \code{estimation.pep} returns a matrix (of dimension 
+#' \code{ssize} \eqn{\times \, (p+1)}) --- 
+#' where the rows correspond
+#' to the simulations and the columns to the beta coefficients
+#' (including the intercept) --- containing the 
+#' simulated data.
+#'
+#' @details
+#' For the computations, Equation 10 of Garcia--Donato and Forte (2018) 
+#' is used. That (simplified) formula arises when changing the prior on the
+#' model parameters to the reference prior. This change of prior is
+#' justified in Garcia--Donato and Forte (2018). The resulting formula is a mixture
+#' distribution and the simulation is implemented as follows: firstly the 
+#' model (component) based on its posterior probability is chosen and 
+#' subsequently the values of the beta coefficients included in the chosen model are
+#' drawn from the corresponding multivariate Student distribution, while the
+#' values of the beta coefficents outside the chosen model are set to zero.
+#'
+#' Let \eqn{k} be the number of models with cumulative posterior probability up 
+#' to the given value of \code{cumul.prob}. Then, for Bayesian model averaging 
+#' the summation is based on the top \eqn{(k+1)} models if they exist, otherwise
+#' on the top \eqn{k} models.
+#'
+#' When both \code{n.models} and \code{cumul.prob} are provided --- once 
+#' specifying the number of models for the given cumulative probability as 
+#' described above --- the minimum between the two numbers is used for estimation.
+#'
+#' @references Garcia--Donato, G. and Forte, A. (2018) Bayesian Testing, 
+#' Variable Selection and Model Averaging in Linear Models using R with 
+#' BayesVarSel. The R Journal, 10(1): 155–174. 
+#' \doi{10.32614/RJ-2018-021}
+#'
+#' @examples
+#' data(UScrime_data)
+#' res <- pep.lm(y~.,data=UScrime_data)
+#' set.seed(123)
+#' estM1 <- estimation.pep(res,ssize=2000)
+#' estM2 <- estimation.pep(res,ssize=2000,estimator="MPM")
+#' @export
+estimation.pep <- function(object,ssize=10000,estimator="BMA",
+                        n.models=NULL,cumul.prob=0.99){
+if(!inherits(object,"pep"))          # check if x is an object of type pep
+   stop("object should be an object of type pep.")
+if (!((ssize%%1==0)&&(ssize>0)))
+   message("Error: the argument ssize should be a positive integer.\n")
+x <- object$x                        # input matrix
+checkinputvartypepredict(x,x,estimator,n.models,cumul.prob) 
+p <- ncol(x)                         # number of explanatory variables
+n <- nrow(x)                         # sample size
+y <- object$y                        # response vector
+modelsmr <- object$models            # models and associated results
+if (!is.null(x)){                    # if p>=1
+ gamma <- modelsmr[,1:p]
+ if (p==1)                           # special case 1: if only one explanatory
+                                     # variable
+  gamma <- matrix(gamma,ncol=1)
+ if (dim(modelsmr)[1]==1)            # special case 2: if only one model
+                                     # returned (e.g. from MC3)
+  gamma <- matrix(gamma,nrow=1)
+ if (estimator=="BMA"){               # estimation under BMA
+   post.prob <- modelsmr[,"Post.Prob"]# posterior probability of models
+   cumprob <- cumsum(post.prob)       # cumulative posterior probability
+                      # how many models have cumulative prob <= to the given one
+                      # including the following model
+   indcumprob <- which(cumprob>cumul.prob)[1]
+   if (is.na(indcumprob))             # if following model does not exist (e.g.
+                                      # when cumul.prob=1)
+      indcumprob <- length(cumprob)   # take the available models
+   if (!is.null(n.models))            # if the number of models is given as well
+     if(n.models<indcumprob)          # then find the min between that and the
+                                      # nbr of models with the given cumul.prob
+       indcumprob <- n.models
+   if (indcumprob>1){ # if more than one models will be used for prediction
+                                      # and normalize their posterior prob
+    post.prob <- post.prob[1:indcumprob]
+                                      # so that it sums to 1
+    post.probn <- post.prob/sum(post.prob) 
+   }else{
+     post.probn <- 1                  # set its normalized posterior prob to 1
+   }
+ }else if (estimator=="MAP"){         # MAP is equivalent to having n.models=1,
+                                      # i.e. top model
+   indcumprob <- 1
+   post.probn <- 1
+ }else if (estimator=="MPM"){         # MPM is also 1 model but need to find it
+   indcumprob <- 1
+   post.probn <- 1
+   inc.probs <- object$inc.probs      # inclusion probs
+   indv <- which(inc.probs>0.5)       # input variables with inclusion prob>0.5
+   gammav <- rep(0,p)                 # vector with inclusion indicators initialization
+   if (length(indv)>0)
+    gammav[indv] <- 1                 # set 1 to the included variables   
+   gamma <- matrix(gammav,nrow=1)     # turn the vector to a 1-row matrix
+ }                                    # center input data matrix
+   x <- scale(x, center=TRUE, scale = FALSE)
+   rsample <- sample(1:indcumprob,ssize,replace=T,prob=post.probn)
+   freqtable <- table(rsample)
+   cumfreqtable <- cumsum(freqtable)
+   cumfreqtableaug <- c(0,cumfreqtable)
+   lg <- length(freqtable)
+   rsunique <- as.numeric(names(freqtable))   
+   ressmpls <- matrix(0,nrow=ssize,ncol=(p+1))
+   for(i in 1:lg){
+     inds <- which(gamma[rsunique[i],]==1)
+     xm <- cbind(1,x[,inds])
+     lmfit <- lm.fit(xm,y)
+     betaest <- lmfit$coefficients
+     sse <- sum((lmfit$residuals)^2)
+     dfs <- n-length(inds)-1
+     meanv <- betaest
+     # sigmam <- solve(t(xm)%*%xm)*sse/dfs  # unstable
+     # replace by the following commands
+     # see https://genomicsclass.github.io/book/pages/qr_and_regression.html
+     # and BayesVarSel R code
+     Rinv <- qr.solve(qr.R(lmfit$qr))
+     iXtX <- Rinv %*% t(Rinv)
+     sigmam <- iXtX*sse/dfs
+     ressmpls[(cumfreqtableaug[i]+1):cumfreqtableaug[i+1],c(1,inds+1)] <- 
+            mvtnorm::rmvt(n=freqtable[i],sigma=sigmam,df=dfs,delta=meanv,type="shifted")
+   } 
+   colnames(ressmpls) <- c("Inter", colnames(x))
+}else{                            # if no explanatory variable
+   ressmpls <- matrix(0,nrow=ssize,ncol=1)
+   n <- length(y)
+   xm <- matrix(1,nrow=n,ncol=1)  # a column of 1's
+   lmfit <- lm.fit(xm,y)          # fit intercept-only model
+   betaest <- lmfit$coefficients  # b0 hat
+   sse <- sum((lmfit$residuals)^2)# SSE
+   dfs <- n-1        # degress of freedom
+   meanv <- betaest               # mean
+   sigmam <- solve(t(xm)%*%xm)*sse/dfs # sigma value
+                                  # simulate from corresponding Student
+   ressmpls[,1] <- mvtnorm::rmvt(n=ssize,sigma=sigmam,df=dfs,delta=meanv,type="shifted")
+   colnames(ressmpls) <- "Inter"  # add column name
+}
+   return(ressmpls)
+}
+
+#' Posterior predictive distribution under Bayesian model averaging
+#'
+#' Simulates values from the posterior predictive distribution under 
+#' Bayesian model averaging.
+#'
+#' @param object An object of class pep (e.g., output of \code{pep.lm}).
+#' @param xnew An optional data frame of numeric, the new data 
+#' on the explanatory variables to be used 
+#' for prediction. The data frame needs to contain information about all 
+#' explanatory variables available in the full model; if not an error message
+#' is output.
+#' If omitted, the data frame employed for fitting the full model is used.
+#' @param ssize Positive integer, the number of values to be simulated from
+#' each posterior predictive distribution.
+#' Default value=10000.
+#' @param estimator A character, the type of prediction. One of 
+#' ``BMA'' (Bayesian model averaging, default), 
+#' ``MAP'' (maximum a posteriori model) or ``MPM'' (median probability model).
+#' Default value=\code{"BMA"}.
+#' @param n.models Positive integer, the number of (top) models where
+#' the average is based on or \code{NULL}. Relevant for \code{estimator="BMA"}.
+#' Default value=\code{NULL}.
+#' @param cumul.prob Numeric between zero and one, cumulative probability of
+#' top models to be used for computing the average. Relevant for \code{estimator="BMA"}. 
+#' Default value=0.99.
+#'
+#' @return \code{posteriorpredictive.pep} returns a matrix (of dimension 
+#' \code{ssize} \eqn{\times} \code{nrow(xnew)}) --- containing the 
+#' simulated data. More specifically, column \eqn{i} contains the simulated
+#' values from the posterior predictive corresponding to the \eqn{i}--th new 
+#' observation (i.e., \eqn{i}--th row of \code{xnew}).
+#'
+#' @details
+#' For the computations, Equation 11 of Garcia--Donato and Forte (2018) 
+#' is used. That (simplified) formula arises when changing the prior on the
+#' model parameters to the reference prior. This change of prior is
+#' justified in Garcia--Donato and Forte (2018). The resulting formula is a mixture
+#' distribution and the simulation is implemented as follows: firstly the 
+#' model (component) based on its posterior probability is chosen and 
+#' subsequently the value for the response is
+#' drawn from the corresponding Student distribution.
+#'
+#' The case of missing data (i.e., presence of NA’s) and non--quantitative data
+#' in the new data frame
+#' \code{xnew} is not currently supported.
+#'
+#' Let \eqn{k} be the number of models with cumulative posterior probability up 
+#' to the given value of \code{cumul.prob}. Then, for Bayesian model averaging 
+#' the prediction is based on the top \eqn{(k+1)} models if they exist, otherwise
+#' on the top \eqn{k} models.
+#'
+#' When both \code{n.models} and \code{cumul.prob} are provided --- once 
+#' specifying the number of models for the given cumulative probability as 
+#' described above --- the minimum between the two numbers is used for prediction.
+#'
+#' @references Garcia--Donato, G. and Forte, A. (2018) Bayesian Testing, 
+#' Variable Selection and Model Averaging in Linear Models using R with 
+#' BayesVarSel. The R Journal, 10(1): 155–174. 
+#' \doi{10.32614/RJ-2018-021}
+#'
+#' @examples
+#' data(UScrime_data)
+#' X <- UScrime_data[,-15]
+#' set.seed(123)
+#' res <- pep.lm(y~.,data=UScrime_data[1:45,],intrinsic=TRUE,
+#'                algorithmic.choice="MC3",itermc3=4000)
+#' resf <- posteriorpredictive.pep(res,ssize=2000,n.models=5)
+#' resf2 <- posteriorpredictive.pep(res,ssize=2000,estimator="MPM")
+#' resp <- posteriorpredictive.pep(res,xnew=X[46:47,],ssize=2000,n.models=5)
+#' @importFrom stats delete.response
+#' @export
+posteriorpredictive.pep <- function(object,xnew,ssize=10000,estimator="BMA",
+                                    n.models=NULL,cumul.prob=0.99){
+if(!inherits(object,"pep"))          # check if x is an object of type pep
+   stop("object should be an object of type pep.")
+if (!((ssize%%1==0)&&(ssize>0)))
+   message("Error: the argument ssize should be a positive integer.\n")
+x <- object$x                        # input matrix
+y <- object$y                        # response vector
+if (!is.null(x)){                    # if p>=1
+ if(missing(xnew))                   # if new data matrix is missing
+  xnew <- x else{                    # use the original input matrix
+  if(!is.data.frame(xnew)){          # if new data is not a data frame
+   message("Error: xnew should be a data frame.\n") 
+   stop("Please respecify and call the function again.")
+  }
+  tt <- terms(object$fullmodel)
+  Terms <- delete.response(tt)
+  xnew <- as.matrix(model.frame(Terms, xnew,na.action=NULL))
+ }
+ checkinputvartypepredict(x,xnew,estimator,n.models,cumul.prob) 
+ p <- ncol(x)                         # number of explanatory variables
+ n <- nrow(x)                         # sample size
+ modelsmr <- object$models
+ gamma <- modelsmr[,1:p]
+ if (p==1)                           # special case 1: if only one explanatory
+                                     # variable
+  gamma <- matrix(gamma,ncol=1)
+ if (dim(modelsmr)[1]==1)            # special case 2: if only one model
+                                     # returned (e.g. from MC3)
+  gamma <- matrix(gamma,nrow=1)
+ if (estimator=="BMA"){               # estimation under BMA
+   post.prob <- modelsmr[,"Post.Prob"]# posterior probability of models
+   cumprob <- cumsum(post.prob)       # cumulative posterior probability
+                      # how many models have cumulative prob <= to the given one
+                      # including the following model
+   indcumprob <- which(cumprob>cumul.prob)[1]
+   if (is.na(indcumprob))             # if following model does not exist (e.g.
+                                      # when cumul.prob=1)
+      indcumprob <- length(cumprob)   # take the available models
+   if (!is.null(n.models))            # if the number of models is given as well
+     if(n.models<indcumprob)          # then find the min between that and the
+                                      # nbr of models with the given cumul.prob
+       indcumprob <- n.models
+   if (indcumprob>1){ # if more than one models will be used for prediction
+                                      # and normalize their posterior prob
+    post.prob <- post.prob[1:indcumprob]
+                                      # so that it sums to 1
+    post.probn <- post.prob/sum(post.prob) 
+   }else{
+     post.probn <- 1                  # set its normalized posterior prob to 1
+   }
+ }else if (estimator=="MAP"){         # MAP is equivalent to having n.models=1,
+                                      # i.e. top model
+   indcumprob <- 1
+   post.probn <- 1
+ }else if (estimator=="MPM"){         # MPM is also 1 model but need to find it
+   indcumprob <- 1
+   post.probn <- 1
+   inc.probs <- object$inc.probs      # inclusion probs
+   indv <- which(inc.probs>0.5)       # input variables with inclusion prob>0.5
+   gammav <- rep(0,p)                 # vector with inclusion indicators initialization
+   if (length(indv)>0)
+    gammav[indv] <- 1                 # set 1 to the included variables   
+   gamma <- matrix(gammav,nrow=1)     # turn the vector to a 1-row matrix
+ }
+  x <- scale(x, center=TRUE, scale = FALSE)
+                                      # use the same centering for the new data matrix
+  xnew <- scale(xnew, center=attr(x,"scaled:center"), scale = FALSE)
+  ressmpls <- matrix(0,nrow=ssize,ncol=nrow(xnew))
+  for(k in 1:nrow(xnew)){
+   xv <- xnew[k,]
+   rsample <- sample(1:indcumprob,ssize,replace=T,prob=post.probn)
+   freqtable <- table(rsample)
+   cumfreqtable <- cumsum(freqtable)
+   cumfreqtableaug <- c(0,cumfreqtable)
+   lg <- length(freqtable)
+   rsunique <- as.numeric(names(freqtable))      
+   for(i in 1:lg){
+     inds <- which(gamma[rsunique[i],]==1)
+     xm <- cbind(1,x[,inds])
+     lmfit <- lm.fit(xm,y)
+     betaest <- lmfit$coefficients
+     sse <- sum((lmfit$residuals)^2)
+     dfs <- n-length(inds)-1
+     xvm <- c(1,xv[inds])
+     meanv <- (xvm%*%betaest)[1]
+     # hgamma <- 1-(xvm%*%solve(xvm%*%t(xvm)+t(xm)%*%xm)%*%xvm)[1]
+     # same here - replace by the following (more stable) commands
+     Xstar <- rbind(xm, xvm)
+     qrXstar <- qr(Xstar)
+     Rinv <- qr.solve(qr.R(qrXstar))
+     iXstartXstar <- Rinv %*% t(Rinv)
+     hgamma <- 1-(xvm%*%iXstartXstar%*%xvm)[1]
+     sigmam <- matrix(sse/(dfs*hgamma),nrow=1)
+     ressmpls[(cumfreqtableaug[i]+1):cumfreqtableaug[i+1],k] <- 
+            mvtnorm::rmvt(n=freqtable[i],sigma=sigmam,df=dfs,delta=meanv,type="shifted")
+   } 
+  }
+ }else{                            # if no explanatory variable
+     ressmpls <- matrix(0,nrow=ssize,ncol=1)
+     n <- length(y)
+     xm <- matrix(1,nrow=n,ncol=1)  # a column of 1's
+     lmfit <- lm.fit(xm,y)          # fit intercept-only model
+     betaest <- lmfit$coefficients  # b0 hat
+     sse <- sum((lmfit$residuals)^2)# SSE
+     dfs <- n-1                     # degress of freedom
+     xvm <- 1
+     meanv <- (xvm%*%betaest)[1]
+     hgamma <- 1-(xvm%*%solve(xvm%*%t(xvm)+t(xm)%*%xm)%*%xvm)[1]
+     sigmam <- matrix(sse/(dfs*hgamma),nrow=1)
+     ressmpls[,1] <- 
+            mvtnorm::rmvt(n=ssize,sigma=sigmam,df=dfs,delta=meanv,type="shifted")
+    
+  }
+  return(ressmpls)
+}
 
 #' Heatmap for top models
 #'
 #' Generates a heatmap where the rows correspond to the (top) models
 #' and the columns to the input/explanatory variables. The value depicted
-#' in cell (i,j) corresponds to the posterior inclusion probability of variable i if this
-#' is included in model j and 0 otherwise.
+#' in cell \eqn{(i,j)} corresponds to the posterior inclusion probability 
+#' of variable \eqn{i} if this
+#' is included in model \eqn{j} and zero otherwise.
 #'
-#' @param x An object of class pep (e.g. output of \code{full_enumeration_pep} 
-#' or \code{mc3_pep}).
+#' @param x An object of class pep (e.g., output of \code{pep.lm}).
 #' @param n.models Positive integer, number of models to be shown on the 
 #' heatmap. Default value=20.
 #' @param ... Additional parameters to be passed to \code{heatmap}.
@@ -385,10 +735,9 @@ predict.pep <- function(object,xnew,estimator="BMA",
 #'
 #' @examples
 #' data(UScrime_data)
-#' y <- UScrime_data[,"y"]
-#' X <- UScrime_data[,-15]
 #' set.seed(123)
-#' resu <- mc3_pep(X,y,beta.binom=FALSE,itermc3=5000)
+#' resu <- pep.lm(y~.,data=UScrime_data,beta.binom=FALSE,
+#'                algorithmic.choice="MC3",itermc3=5000)
 #' image(resu)
 #' image(resu,n.models=10)
 #'
@@ -417,6 +766,9 @@ image.pep <- function(x,n.models=20,...){
                                       # take the min between the 'asked' number
                                       # of models and the available
  n.models <- min(n.models,dim(modelsmr)[1])
+ if (p==0)                            # if no input variables
+  stop("An image plot cannot be generated without explanatory variables.")
+
  Mi <- modelsmr[1:n.models,1:p]       # matrix of variable inclusion 
                                       # indicators for the top n.models
  if(n.models==1)                      # if only 1 model will be shown
@@ -424,8 +776,6 @@ image.pep <- function(x,n.models=20,...){
  Misc <- t(t(Mi)*inc.probs)           # replace the 1's in the previous matrix
                                       # by the actual inclusion probs
  rownames(Misc) <- 1:n.models         # add row names
- if (p==0)                            # if no input variables
-  stop("An image plot cannot be generated without explanatory variables.")
                                       # color code
  colr <- c("white",colorRampPalette(c("lightblue","blue","darkblue"))(256))
  # The next conditions have been introduced for 
@@ -461,11 +811,139 @@ image.pep <- function(x,n.models=20,...){
          col = colr,...)
 }                                     # end function image.pep
 
+#' Bayes factor for model comparison
+#'
+#' Given two models to be compared (the one nested to the other), 
+#' computes the corresponding Bayes factor.
+#'
+#' @param formula1 One of the two formulas/models to be compared. 
+#' @param formula2 The second formula/model. The one model 
+#' needs to be nested to the other.
+#' @param data A data frame (of numeric values), containing the data.
+#' @param intrinsic Logical, indicating whether the PEP 
+#' (\code{FALSE}) or the intrinsic --- which   
+#' is a special case of it --- (\code{TRUE}) should be used as prior on the  
+#' regression parameters. Default value=\code{FALSE}.
+#' @param reference.prior Logical, indicating whether the reference prior
+#' (\code{TRUE}) or the dependence Jeffreys prior (\code{FALSE}) is used as 
+#' baseline. Default value=\code{TRUE}.
+#'
+#' @return \code{peptest} returns the Bayes factor, i.e., a numeric value.
+#' For the ratio, the marginal likelihood of the more complex model (nominator)
+#' with respect to that of the simpler one (denominator) is computed. 
+#' Both marginal likelihoods are computed with respect
+#' to the intercept--only model (reference model).
+#'
+#' @details 
+#' This function can be used to perform hypothesis testing indirectly. More
+#' specifically, for the interpretation of the result (Bayes factor), the table in 
+#' Kass and Raftery (1995) can be used.
+#'
+#' The function works when \eqn{p\leq n-2}, where \eqn{p} is the number of explanatory 
+#' variables in the more complex model and \eqn{n} is the sample size.
+#'
+#' The case of missing data (i.e., presence of \code{NA}'s either in the  
+#' data matrix corresponding to the explanatory variables of the more complex 
+#' model or the response vector) is not currently supported. Further, the
+#' explanatory variables of the more complex model need to be quantitative.
+#'
+#' If \eqn{p>1}, the explanatory variables of the more complex model 
+#' cannot have an exact linear relationship (perfect multicollinearity).
+#'
+#' @references Kass, R. and Raftery, A. (1995) Bayes Factors. 
+#' Journal of the American Statistical Association, 90(430): 773–795. 
+#' \doi{10.1080/01621459.1995.10476572}
+#'
+#' @examples
+#' data(UScrime_data)
+#' resBF1 <- peptest(y~1,y~M+Ed,UScrime_data)
+#' resBF1i <- peptest(y~1,y~M+Ed,UScrime_data, intrinsic=TRUE)
+#' resBF2j <- peptest(y~M+Ed+Po1+Po2,y~M+Ed,UScrime_data,
+#'                    reference.prior=FALSE)
+#' resBF2ij <- peptest(y~M+Ed+Po1+Po2,y~M+Ed,UScrime_data,
+#'                     intrinsic=TRUE, reference.prior=FALSE)
+#'
+#' @export
+peptest <- function(formula1, formula2, data, intrinsic=FALSE, 
+                    reference.prior=TRUE){
+formulalist <- list(formula1, formula2)
+# check arguments' type
+if(!((is.list(formulalist))&&(length(formulalist)==2))){
+  message("Error: formulalist should be a list with 2 components.\n") 
+  stop("Please respecify and call the function again.")
+}
+for (j in 1:2)
+  if(!inherits(formulalist[[j]],"formula"))    # check if formula is of type formula
+      stop("formula1 and formula2 should be of type formula.")
+
+if(!is.data.frame(data)){
+  message("Error: data should be a data frame.\n") 
+  stop("Please respecify and call the function again.")
+}
+predctrslist <- lapply(formulalist, 
+                       function(x){attr(terms(x,data=data),"term.labels")})
+predctrsnbr <- unlist(lapply(predctrslist,length))
+simplemodind <- which.min(predctrsnbr)
+simplemodpredctrs <- predctrslist[[simplemodind]]
+compositemodpredctrs <- predctrslist[[-simplemodind]]
+isnestedmod <- all(simplemodpredctrs%in%compositemodpredctrs)
+if(!(isnestedmod==TRUE)){
+  message("Error: one of the given models should be nested within the other.\n")
+  stop("Please respecify and call the function again.")
+}
+
+# Reference model
+k0 <- 1
+R0 <- 0
+
+# Remaining models
+diffpredctrs <- compositemodpredctrs
+ndiffpredctrs <- length(diffpredctrs)
+gamma <- matrix(0,nrow=2,ncol=ndiffpredctrs)
+colnames(gamma) <- diffpredctrs
+for (i in 1:2)
+  gamma[i,predctrslist[[i]]] <- 1
+mf <- model.frame(formulalist[[-simplemodind]],data,na.action=NULL)
+y <- model.response(mf, "numeric")
+predctrs <- attr(terms(formulalist[[-simplemodind]],data=data),"term.labels")
+x <- as.matrix(mf[,predctrs])
+
+# check that the function arguments are of the correct type
+checkinputvartype(x,y,intrinsic,reference.prior,
+                  TRUE,FALSE)
+# check that n>=p+2 for feasibility
+compareparamvssamplesize(x)
+checkmissingness(x,y)                 # check that there are no NAs 
+p <- ncol(x)                          # number of explanatory variables
+if (p>1)                              # if more than one
+ checkmatrixrank(x)
+
+if (length(simplemodpredctrs)==0){
+  gamma <- matrix(gamma[-simplemodind,],nrow=1)
+  res1 <- test_pepc(x,gamma,y,intrinsic=intrinsic,reference.prior,k0,R0)$marglikel
+  finres <- exp(res1)
+  names(finres) <- "H1 model to H0 model"
+}else{
+  res1 <- test_pepc(x,gamma,y,intrinsic=intrinsic,reference.prior,k0,R0)$marglikel
+  finres <- exp(res1[-simplemodind]-res1[simplemodind])
+  names(finres) <- "H1 model to H0 model"
+}
+return(finres)
+}
 
 # Constructor of the class pep
-pep <- function(models, inc.probs, x, y, intrinsic, reference.prior, beta.binom){
- obj <- list(models = models, inc.probs = inc.probs, x = x, y = y, 
-             intrinsic = intrinsic, reference.prior=reference.prior, beta.binom = beta.binom)
+pep <- function(models, inc.probs, x, y, fullmodel, mapp, 
+                intrinsic, reference.prior, 
+                beta.binom, allvisitedmodsM){
+ if(!missing(allvisitedmodsM))
+  obj <- list(models = models, inc.probs = inc.probs, x = x, y = y, 
+              fullmodel = fullmodel, mapp = mapp,
+              intrinsic = intrinsic, reference.prior=reference.prior, 
+              beta.binom = beta.binom, allvisitedmodsM = allvisitedmodsM)else
+  obj <- list(models = models, inc.probs = inc.probs, x = x, y = y, 
+              fullmodel = fullmodel, mapp = mapp, 
+              intrinsic = intrinsic, reference.prior=reference.prior, 
+              beta.binom = beta.binom)
  class(obj) <- "pep"
  obj
 }

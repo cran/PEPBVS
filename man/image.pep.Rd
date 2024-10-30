@@ -7,8 +7,7 @@
 \method{image}{pep}(x, n.models = 20, ...)
 }
 \arguments{
-\item{x}{An object of class pep (e.g. output of \code{full_enumeration_pep} 
-or \code{mc3_pep}).}
+\item{x}{An object of class pep (e.g., output of \code{pep.lm}).}
 
 \item{n.models}{Positive integer, number of models to be shown on the 
 heatmap. Default value=20.}
@@ -16,13 +15,14 @@ heatmap. Default value=20.}
 \item{...}{Additional parameters to be passed to \code{heatmap}.}
 }
 \value{
-No return value, used for generating a heatmap.
+No return value, used for heatmap generation.
 }
 \description{
 Generates a heatmap where the rows correspond to the (top) models
 and the columns to the input/explanatory variables. The value depicted
-in cell (i,j) corresponds to the posterior inclusion probability of variable i if this
-is included in model j and 0 otherwise.
+in cell \eqn{(i,j)} corresponds to the posterior inclusion probability 
+of variable \eqn{i} if this
+is included in model \eqn{j} and zero otherwise.
 }
 \details{
 The number of models to be displayed on the heatmap is computed as the minimum
@@ -38,10 +38,9 @@ and a message is printed.
 }
 \examples{
 data(UScrime_data)
-y <- UScrime_data[,"y"]
-X <- UScrime_data[,-15]
 set.seed(123)
-resu <- mc3_pep(X,y,beta.binom=FALSE,itermc3=5000)
+resu <- pep.lm(y~.,data=UScrime_data,beta.binom=FALSE,
+               algorithmic.choice="MC3",itermc3=5000)
 image(resu)
 image(resu,n.models=10)
 

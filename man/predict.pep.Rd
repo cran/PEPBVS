@@ -2,7 +2,7 @@
 % Please edit documentation in R/basic_complementary_functions.R
 \name{predict.pep}
 \alias{predict.pep}
-\title{Prediction under PEP approach}
+\title{(Point) Prediction under PEP approach}
 \usage{
 \method{predict}{pep}(
   object,
@@ -14,24 +14,25 @@
 )
 }
 \arguments{
-\item{object}{An object of class pep (e.g. output of \code{full_enumeration_pep} 
-or \code{mc3_pep}).}
+\item{object}{An object of class pep (e.g., output of \code{pep.lm}).}
 
-\item{xnew}{A matrix of numeric (with p columns), the new data to be used for prediction.
-This matrix contains the values of the explanatory variables 
-without an intercept column of 1's, i.e. the number of its columns
-coincides with the number of columns of \code{object$x}.
-If omitted, fitted values are computed.}
+\item{xnew}{An optional data frame of numeric, the new data 
+on the explanatory variables to be used 
+for prediction. The data frame needs to contain information about all 
+explanatory variables available in the full model; if not an error message
+is output. If omitted, fitted values are 
+computed.}
 
 \item{estimator}{A character, the type of prediction. One of 
-"BMA" (Bayesian model averaging, default), 
-"MAP" (maximum a posteriori model) or "MPM" (median probability model).}
+``BMA'' (Bayesian model averaging, default), 
+``MAP'' (maximum a posteriori model) or ``MPM'' (median probability model).
+Default value=\code{"BMA"}.}
 
 \item{n.models}{Positive integer, the number of (top) models that
 prediction is based on or \code{NULL}. Relevant for \code{estimator="BMA"}.
 Default value=\code{NULL}.}
 
-\item{cumul.prob}{Numeric between 0 and 1, cumulative probability of
+\item{cumul.prob}{Numeric between zero and one, cumulative probability of
 top models to be used for prediction. Relevant for \code{estimator="BMA"}. 
 Default value=0.99.}
 
@@ -49,39 +50,41 @@ top models (either based on explicit number or on their cumulative probability)
 can be used for prediction.
 }
 \details{
-When \code{xnew} is missing or \code{xnew}=\code{object$x} then fitted 
+When \code{xnew} is missing or \code{xnew} is equal to the initial
+data frame used for fitting, then fitted 
 values are computed (and returned).
 
 For prediction, Equation 9 of Fouskakis and Ntzoufras (2020) is used.
 
-The case of missing data (i.e. presence of NA’s) in the new data matrix is
-not currently supported.
+The case of missing data (i.e., presence of NA’s) 
+and non--quantitative data in the new data frame
+\code{xnew} is not currently supported.
 
-Let k be the number of models with cumulative posterior probability up 
+Let \eqn{k} be the number of models with cumulative posterior probability up 
 to the given value of \code{cumul.prob}. Then, for Bayesian model averaging 
-the prediction is based on the top (k+1) models if they exist, otherwise
-on the top k models.
+the prediction is based on the top \eqn{(k+1)} models if they exist, otherwise
+on the top \eqn{k} models.
 
-When both \code{n.models} and \code{cumul.prob} are provided - once 
+When both \code{n.models} and \code{cumul.prob} are provided --- once 
 specifying the number of models for the given cumulative probability as 
-described above - the minimum between the two numbers is used for prediction.
+described above --- the minimum between the two numbers is used for prediction.
 }
 \examples{
 data(UScrime_data)
-y <- UScrime_data[,"y"]
 X <- UScrime_data[,-15]
 set.seed(123)
-res <- mc3_pep(X[1:45,],y[1:45],intrinsic=TRUE,itermc3=4000)
+res <- pep.lm(y~.,data=UScrime_data[1:45,],intrinsic=TRUE,
+               algorithmic.choice="MC3",itermc3=4000)
 resf <- predict(res)
 resf2 <- predict(res,estimator="MPM")
 resp <- predict(res,xnew=X[46:47,])
 }
 \references{
-Fouskakis, D. and Ntzoufras, I. (2022) Power-Expected-Posterior 
-Priors as Mixtures of g-Priors in Normal Linear Models. 
+Fouskakis, D. and Ntzoufras, I. (2022) Power--Expected--Posterior 
+Priors as Mixtures of g--Priors in Normal Linear Models. 
 Bayesian Analysis, 17(4): 1073-1099. \doi{10.1214/21-BA1288}
 
 Fouskakis, D. and Ntzoufras, I. (2020) Bayesian Model Averaging Using 
-Power-Expected-Posterior Priors. 
+Power--Expected--Posterior Priors. 
 Econometrics, 8(2): 17. \doi{10.3390/econometrics8020017}
 }
