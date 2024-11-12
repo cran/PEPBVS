@@ -1,4 +1,4 @@
-f1bb08fe14536c2d8f1f5952e258f984 *DESCRIPTION
+d9e69c06bfd57bfcb045e5647a5db00e *DESCRIPTION
 f0c4843cbfffafcb14455ef7ad19e823 *NAMESPACE
 bec16de29a151f44b29471da096b9f63 *NEWS.md
 556627ba63e1a898c5106a063855aa63 *R/PEPBVS-deprecated.R
@@ -8,7 +8,7 @@ bec16de29a151f44b29471da096b9f63 *NEWS.md
 202bab63abf645a3c8aca690d828db97 *R/auxiliary_functions.R
 35f9bed916f70c34d77edc3817bbf49a *R/basic_complementary_functions.R
 d901947b4559c8979ccb0a1f16ec2004 *R/checking_error-messages.R
-8e01a05c0f4ca6b6474350a0c42ee656 *R/comparepriors.lm.R
+161d14998bdc6eccb911efa4c5e29e95 *R/comparepriors.lm.R
 3acecbe923abfbb987124b76130c9fc5 *R/full_enumerationc.R
 875313ec46afc84eda86095a9f2004d4 *R/mc3c.R
 79848625e1b48e6c64f1461ffbd872d2 *R/pep.lm.R
@@ -17,10 +17,10 @@ b54db8794555342c4feee5fe0b1b8f5b *build/partial.rdb
 bf7cfe8e189c32720bfa1d99480cf0b1 *man/PEPBVS-deprecated.Rd
 183d6884af0344d65a38c4ebfd6f4e6a *man/PEPBVS-package.Rd
 533ec20f01c08636d872f746506c116d *man/UScrime_data.Rd
-680f619001631379f7c85e9377f9636e *man/comparepriors.lm.Rd
+51688de8c9bde0efe2d0eb4acc43b416 *man/comparepriors.lm.Rd
 bcd8ecb1014a90a8b7e81535d6e01ce2 *man/estimation.pep.Rd
 c927877bcd77aca6ddbe23167a8a373e *man/image.pep.Rd
-d5d563ddc5c7f8c472c864288cb5f653 *man/pep.lm.Rd
+2a878372b98d44fa28e7d5c7cc27fcd9 *man/pep.lm.Rd
 a0a198eb67ea04c5446b93c1db5ecd4b *man/peptest.Rd
 72052ee805d2ef8a0f323e3278181fb1 *man/plot.pep.Rd
 62cbf75ba331ff4e7e1cbc81c2dbf21e *man/posteriorpredictive.pep.Rd

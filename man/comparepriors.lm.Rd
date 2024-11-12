@@ -121,7 +121,7 @@ and \eqn{p\leq n-2} (\eqn{n} being the sample size).
 \examples{
 data(UScrime_data)
 resc <- comparepriors.lm(y~.,UScrime_data,
-                         priorbetacoeff = c("PEP","Robust","hyper-g-n"),
+                         priorbetacoeff = c("PEP","hyper-g-n"),
                          reference.prior = TRUE,priormodels = "beta-binomial")
 
 }

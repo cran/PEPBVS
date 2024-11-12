@@ -148,9 +148,9 @@ res <- pep.lm(y~.,data=UScrime_data)
 resu <- pep.lm(y~.,data=UScrime_data,beta.binom=FALSE)
 resi <- pep.lm(y~.,data=UScrime_data,intrinsic=TRUE)
 set.seed(123)
-res2 <- pep.lm(y~.,data=UScrime_data,algorithmic.choice="MC3",itermc3=2500)
+res2 <- pep.lm(y~.,data=UScrime_data,algorithmic.choice="MC3",itermc3=2000)
 resj2 <- pep.lm(y~.,data=UScrime_data,reference.prior=FALSE,
-               algorithmic.choice="MC3",burnin=100,itermc3=1800) 
+               algorithmic.choice="MC3",burnin=20,itermc3=1800) 
 
 }
 \references{
